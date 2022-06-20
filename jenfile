@@ -1,0 +1,45 @@
+pipeline
+{
+    agent any
+    stages
+    {
+        stage('download')
+        {
+            steps
+            {
+               git 'https://github.com/ankireddy1/myrepoforjen.git'  
+            }
+        }
+        stage('build')
+        {
+            steps
+            {
+               sh 'mvn package'
+            }
+        }
+        stage('deploy')
+        {
+            steps
+            {
+                deploy adapters: [tomcat9(credentialsId: '9fcbcd73-5d4f-47c0-88c8-d02fd9e3c222', path: '', url: 'http://172.31.42.99:8080')], contextPath: 'test1', war: '**/*.war'
+            }
+        }
+        stage('testing')
+        {
+            steps
+            {
+                git 'https://github.com/intelliqittrainings/FunctionalTesting.git'
+                sh 'java -jar testing.jar'
+            }
+        }
+        stage('delivery')
+        {
+            steps
+            {
+                input message: 'wait for approval', submitter: 'srinu'
+          deploy adapters: [tomcat9(credentialsId: '9fcbcd73-5d4f-47c0-88c8-d02fd9e3c222', path: '', url: 'http://172.31.39.82:8080')], contextPath: 'prd', war: '**/*.war'
+            }
+        }
+        
+    }
+}
